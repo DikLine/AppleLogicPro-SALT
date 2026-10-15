@@ -216,4 +216,118 @@ function checkDirectChannel(channel) {
     if (params[31] > 0 && params[34] === 0 && channel >= params[32] && channel <= params[33]) return {mode: "long", delay: (params[31] === 1) ? params[1] : params[37]};
     if (params[38] > 0 && params[41] === 0 && channel >= params[39] && channel <= params[40]) return {mode: "long", delay: (params[38] === 1) ? params[1] : params[44]};
 
-    if (params[45] > 0 && params[48] === 0 && channel >= params[46] &
+    if (params[45] > 0 && params[48] === 0 && channel >= params[46] && channel <= params[47]) return {mode: "short", delay: (params[45] === 1) ? params[2] : params[51]};
+    if (params[52] > 0 && params[55] === 0 && channel >= params[53] && channel <= params[54]) return {mode: "short", delay: (params[52] === 1) ? params[2] : params[58]};
+    if (params[59] > 0 && params[62] === 0 && channel >= params[60] && channel <= params[61]) return {mode: "short", delay: (params[59] === 1) ? params[2] : params[65]};
+    if (params[66] > 0 && params[69] === 0 && channel >= params[67] && channel <= params[68]) return {mode: "short", delay: (params[66] === 1) ? params[2] : params[72]};
+
+    return null;
+}
+
+function HandleMIDI(event) {
+    var isNoteOn  = (event instanceof NoteOn && event.velocity > 0);
+    var isNoteOff = (event instanceof NoteOff || (event instanceof NoteOn && event.velocity === 0));
+
+    var chIndex = event.channel - 1; 
+
+    // 1. NOTES (ON)
+    if (isNoteOn) {
+        if (isValidKS(event.pitch, chIndex)) {
+            processKeyswitch(event.pitch, chIndex);
+            event.send();
+            return;
+        }
+
+        var delayToApply = 0;
+        var directMatch = checkDirectChannel(chIndex);
+        
+        var activeMode = directMatch ? directMatch.mode : currentMode;
+        var activeDelay = directMatch ? directMatch.delay : currentDelay;
+
+        if (activeMode === "legato") {
+            delayToApply = (activeNotes === 0) ? params[0] : activeDelay;
+            logTrace("🎵 Note IN (Legato" + (directMatch?" CH-Direct":" KS") + ") - Pitch: " + event.pitch + " | Delay: " + delayToApply + "ms");
+        } 
+        else if (activeMode === "long" || activeMode === "short") {
+            delayToApply = activeDelay;
+            logTrace("🎵 Note IN (" + activeMode + (directMatch?" CH-Direct":" KS") + ") - Pitch: " + event.pitch + " | Delay: " + delayToApply + "ms");
+        } 
+        else {
+            delayToApply = 0;
+            logTrace("🎵 Note IN (OFF/None) - Pitch: " + event.pitch + " | Delay: 0ms");
+        }
+
+        activeNotes++;
+        lastNoteMode = activeMode;
+        lastNoteDelay = delayToApply;
+        delayMemory[event.pitch] = delayToApply;
+        sendWithSafeDelay(event, delayToApply);
+    } 
+    
+    // 2. NOTES (OFF)
+    else if (isNoteOff) {
+        if (isValidKS(event.pitch, chIndex)) {
+            event.send(); 
+        } else {
+            if (activeNotes > 0) activeNotes--;
+            var storedDelay = delayMemory[event.pitch] || 0;
+            logTrace("🔇 Note OUT - Pitch: " + event.pitch + " | Delay: " + storedDelay + "ms | Remaining Notes: " + activeNotes);
+            sendWithSafeDelay(event, storedDelay);
+        }
+    } 
+    
+    // 3. CONTINUOUS DATA (CCs, PitchBend, Aftertouch, etc.)
+    else {
+        var ccDelay = 0;
+        var referenceMode = (lastNoteMode !== "none") ? lastNoteMode : currentMode;
+        var referenceDelay = (lastNoteDelay !== 0) ? lastNoteDelay : currentDelay;
+
+        if (referenceMode === "legato") {
+            ccDelay = (activeNotes === 0) ? params[0] : referenceDelay;
+        } 
+        else if (referenceMode === "long" || referenceMode === "short") {
+            ccDelay = referenceDelay;
+        }
+
+        // --- 🚀 MULTI-CHANNEL FORWARDER (FROM CH 1) ---
+        // Clones Ch 1 continuous data to Ch 2-16 to support Logic Pro's Articulation Sets limitations
+        if (event.channel === 1 && (event instanceof ControlChange || event instanceof PitchBend || event instanceof ChannelPressure || event instanceof PolyPressure)) {
+            
+            // A. Send on Channel 1
+            sendWithSafeDelay(event, ccDelay);
+
+            // B. Clone to Channels 2 through 16
+            for (var c = 2; c <= 16; c++) {
+                var clone = null;
+                if (event instanceof ControlChange) {
+                    clone = new ControlChange(); clone.number = event.number; clone.value = event.value;
+                } else if (event instanceof PitchBend) {
+                    clone = new PitchBend(); clone.value = event.value;
+                } else if (event instanceof ChannelPressure) {
+                    clone = new ChannelPressure(); clone.value = event.value;
+                } else if (event instanceof PolyPressure) {
+                    clone = new PolyPressure(); clone.pitch = event.pitch; clone.value = event.value;
+                }
+                
+                if (clone) {
+                    clone.channel = c;
+                    sendWithSafeDelay(clone, ccDelay);
+                }
+            }
+        } 
+        else {
+            // Standard passthrough for non-Ch 1 events or other MIDI data
+            sendWithSafeDelay(event, ccDelay);
+        }
+    }
+}
+
+function Reset() {
+    activeNotes   = 0;
+    delayMemory   = {};
+    currentMode   = "none";
+    currentDelay  = 0;
+    lastNoteMode  = "none";
+    lastNoteDelay = 0;
+    logTrace("🔄 SCRIPT RESET");
+}
