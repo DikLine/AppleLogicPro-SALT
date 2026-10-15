@@ -1,13 +1,12 @@
-# Logic Pro Scripter — SALT
+# Logic Pro — SALT
 
-### Sample Articulation Library Timing
+### Scripter Articulations Latency Taming
 
-**Orchestral Articulation & Delay Management for Apple Logic Pro**
+**Orchestral Sample Library Articulations Latency Management for Apple Logic Pro**
 
 SALT is a suite of MIDI processing scripts built for **Apple Logic Pro's Scripter MIDI FX plugin**.
 
-It is designed to make orchestral sample libraries easier to play, program, and automate by handling articulation-dependent timing, Continuous Controller synchronization, and multi-channel MIDI routing directly inside Logic Pro.
-
+It was designed to facilitate MIDI programming and automation by handling the latency inherent in instrument articulations in orchestral sample libraries, managing the attack-dependent timing of each one, as well as the automatic synchronization of the corresponding Continuous Controllers (CC) and their multi-channel MIDI routing, all from the Apple Logic Pro Scripter MIDI FX plug-in.
 > **Just add a pinch of SALT to your orchestral template.** 🧂
 
 ---
