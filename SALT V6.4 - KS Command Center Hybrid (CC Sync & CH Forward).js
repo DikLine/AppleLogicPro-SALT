@@ -160,4 +160,60 @@ function isValidKS(pitch, channel) {
 
     if (params[17] > 0 && params[20] === 1 && pitch >= params[21] && pitch <= params[22] && channel >= params[18] && channel <= params[19]) return true;
     if (params[24] > 0 && params[27] === 1 && pitch >= params[28] && pitch <= params[29] && channel >= params[25] && channel <= params[26]) return true;
-    if (params[31] 
+    if (params[31] > 0 && params[34] === 1 && pitch >= params[35] && pitch <= params[36] && channel >= params[32] && channel <= params[33]) return true;
+    if (params[38] > 0 && params[41] === 1 && pitch >= params[42] && pitch <= params[43] && channel >= params[39] && channel <= params[40]) return true;
+
+    if (params[45] > 0 && params[48] === 1 && pitch >= params[49] && pitch <= params[50] && channel >= params[46] && channel <= params[47]) return true;
+    if (params[52] > 0 && params[55] === 1 && pitch >= params[56] && pitch <= params[57] && channel >= params[53] && channel <= params[54]) return true;
+    if (params[59] > 0 && params[62] === 1 && pitch >= params[63] && pitch <= params[64] && channel >= params[60] && channel <= params[61]) return true;
+    if (params[66] > 0 && params[69] === 1 && pitch >= params[70] && pitch <= params[71] && channel >= params[67] && channel <= params[68]) return true;
+
+    return false;
+}
+
+function processKeyswitch(ks, channel) {
+    if (params[3] === 1 && params[6] === 1 && ks >= params[7] && ks <= params[8] && channel >= params[4] && channel <= params[5]) { 
+        currentMode = "legato"; currentDelay = params[9]; logTrace("✅ KS: Legato 1 | Delay: " + currentDelay); return; 
+    }
+    if (params[10] === 1 && params[13] === 1 && ks >= params[14] && ks <= params[15] && channel >= params[11] && channel <= params[12]) { 
+        currentMode = "legato"; currentDelay = params[16]; logTrace("✅ KS: Legato 2 | Delay: " + currentDelay); return; 
+    }
+
+    if (params[17] > 0 && params[20] === 1 && ks >= params[21] && ks <= params[22] && channel >= params[18] && channel <= params[19]) { 
+        currentMode = "long"; currentDelay = (params[17] === 1) ? params[1] : params[23]; logTrace("✅ KS: Long 1 | Delay: " + currentDelay); return; 
+    }
+    if (params[24] > 0 && params[27] === 1 && ks >= params[28] && ks <= params[29] && channel >= params[25] && channel <= params[26]) { 
+        currentMode = "long"; currentDelay = (params[24] === 1) ? params[1] : params[30]; logTrace("✅ KS: Long 2 | Delay: " + currentDelay); return; 
+    }
+    if (params[31] > 0 && params[34] === 1 && ks >= params[35] && ks <= params[36] && channel >= params[32] && channel <= params[33]) { 
+        currentMode = "long"; currentDelay = (params[31] === 1) ? params[1] : params[37]; logTrace("✅ KS: Long 3 | Delay: " + currentDelay); return; 
+    }
+    if (params[38] > 0 && params[41] === 1 && ks >= params[42] && ks <= params[43] && channel >= params[39] && channel <= params[40]) { 
+        currentMode = "long"; currentDelay = (params[38] === 1) ? params[1] : params[44]; logTrace("✅ KS: Long 4 | Delay: " + currentDelay); return; 
+    }
+
+    if (params[45] > 0 && params[48] === 1 && ks >= params[49] && ks <= params[50] && channel >= params[46] && channel <= params[47]) { 
+        currentMode = "short"; currentDelay = (params[45] === 1) ? params[2] : params[51]; logTrace("✅ KS: Short 1 | Delay: " + currentDelay); return; 
+    }
+    if (params[52] > 0 && params[55] === 1 && ks >= params[56] && ks <= params[57] && channel >= params[53] && channel <= params[54]) { 
+        currentMode = "short"; currentDelay = (params[52] === 1) ? params[2] : params[58]; logTrace("✅ KS: Short 2 | Delay: " + currentDelay); return; 
+    }
+    if (params[59] > 0 && params[62] === 1 && ks >= params[63] && ks <= params[64] && channel >= params[60] && channel <= params[61]) { 
+        currentMode = "short"; currentDelay = (params[59] === 1) ? params[2] : params[65]; logTrace("✅ KS: Short 3 | Delay: " + currentDelay); return; 
+    }
+    if (params[66] > 0 && params[69] === 1 && ks >= params[70] && ks <= params[71] && channel >= params[67] && channel <= params[68]) { 
+        currentMode = "short"; currentDelay = (params[66] === 1) ? params[2] : params[72]; logTrace("✅ KS: Short 4 | Delay: " + currentDelay); return; 
+    }
+}
+
+// 🎯 HYBRID RADAR ("Pure Channels") - Identifies if channel triggers an articulation natively
+function checkDirectChannel(channel) {
+    if (params[3] === 1 && params[6] === 0 && channel >= params[4] && channel <= params[5]) return {mode: "legato", delay: params[9]};
+    if (params[10] === 1 && params[13] === 0 && channel >= params[11] && channel <= params[12]) return {mode: "legato", delay: params[16]};
+
+    if (params[17] > 0 && params[20] === 0 && channel >= params[18] && channel <= params[19]) return {mode: "long", delay: (params[17] === 1) ? params[1] : params[23]};
+    if (params[24] > 0 && params[27] === 0 && channel >= params[25] && channel <= params[26]) return {mode: "long", delay: (params[24] === 1) ? params[1] : params[30]};
+    if (params[31] > 0 && params[34] === 0 && channel >= params[32] && channel <= params[33]) return {mode: "long", delay: (params[31] === 1) ? params[1] : params[37]};
+    if (params[38] > 0 && params[41] === 0 && channel >= params[39] && channel <= params[40]) return {mode: "long", delay: (params[38] === 1) ? params[1] : params[44]};
+
+    if (params[45] > 0 && params[48] === 0 && channel >= params[46] &
