@@ -175,4 +175,84 @@ function HandleMIDI(event) {
     var uaccNote = params[1];
 
     // 1. UACC KEYSWITCH (Detects trigger note and reads Velocity)
-    if (isNoteOn && event.pitch =
+    if (isNoteOn && event.pitch === uaccNote) {
+        var recognized = processUACC(event.velocity);
+        if (!recognized) {
+            currentMode = "none";
+            currentDelay = 0;
+            logTrace("⚠️ UACC Ignored/Off (Vel: " + event.velocity + ") -> Mode Reset");
+        }
+        event.send();
+        return;
+    }
+
+    // 2. MUSICAL NOTES
+    if (isNoteOn && event.pitch !== uaccNote) {
+        var delayToApply = 0;
+
+        if (currentMode === "legato") {
+            delayToApply = (activeNotes === 0) ? params[0] : currentDelay;
+            logTrace("🎵 Note IN (Legato) - Pitch: " + event.pitch + " | Delay: " + delayToApply + "ms");
+        } 
+        else if (currentMode === "long" || currentMode === "short") {
+            delayToApply = currentDelay;
+            logTrace("🎵 Note IN (" + currentMode + ") - Pitch: " + event.pitch + " | Delay: " + delayToApply + "ms");
+        }
+        else {
+            delayToApply = 0;
+            logTrace("🎵 Note IN (OFF/None) - Pitch: " + event.pitch + " | Delay: 0ms");
+        }
+
+        activeNotes++;
+        lastNoteDelay = delayToApply; // Update CC memory
+        delayMemory[event.pitch] = delayToApply;
+        sendWithSafeDelay(event, delayToApply);
+    }
+
+    // 3. NOTE OFF
+    else if (isNoteOff) {
+        if (event.pitch !== uaccNote) {
+            if (activeNotes > 0) activeNotes--;
+            var storedDelay = delayMemory[event.pitch] || 0;
+            
+            logTrace("🔇 Note OUT - Pitch: " + event.pitch + " | Delay: " + storedDelay + "ms | Remaining Notes: " + activeNotes);
+            sendWithSafeDelay(event, storedDelay);
+        } else {
+            event.send(); // Releasing the UACC trigger note has no delay
+        }
+    }
+    
+    // 4. CONTINUOUS DATA (CC Sync)
+    else {
+        var ccDelay = 0;
+
+        if (currentMode === "legato") {
+            if (activeNotes === 0) {
+                // CCs before attack receive Track Delay
+                ccDelay = params[0];
+            } else {
+                // CCs mid-legato phrase receive transition latency
+                ccDelay = lastNoteDelay;
+            }
+        } 
+        else if (currentMode === "long" || currentMode === "short") {
+            // Short/Long articulations follow current delay
+            ccDelay = currentDelay;
+        }
+        else {
+            // No mode = direct pass-through
+            ccDelay = 0;
+        }
+
+        sendWithSafeDelay(event, ccDelay);
+    }
+}
+
+function Reset() {
+    activeNotes   = 0;
+    delayMemory   = {};
+    currentMode   = "none";
+    currentDelay  = 0;
+    lastNoteDelay = 0;
+    logTrace("🔄 SCRIPT RESET");
+}
