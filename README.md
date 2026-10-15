@@ -1,4 +1,4 @@
-# Logic Pro — SALT
+# Apple Logic Pro — SALT
 
 ### Scripter Articulations Latency Taming
 
