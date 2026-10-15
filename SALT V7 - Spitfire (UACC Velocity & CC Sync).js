@@ -67,4 +67,112 @@ var PluginParameters = [
     {name: "Short(s) 1 Max Velocity", type: "lin", minValue: 1, maxValue: 127, numberOfSteps: 126, defaultValue: 1},
     {name: "Short(s) 1 Custom Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 0},
 
-    {name: "🟢 Short(s) 2️⃣ Delay State",  type: "menu", valueStrings: optArtic, def
+    {name: "🟢 Short(s) 2️⃣ Delay State",  type: "menu", valueStrings: optArtic, defaultValue: 0},
+    {name: "Short(s) 2 Min Velocity", type: "lin", minValue: 1, maxValue: 127, numberOfSteps: 126, defaultValue: 1},
+    {name: "Short(s) 2 Max Velocity", type: "lin", minValue: 1, maxValue: 127, numberOfSteps: 126, defaultValue: 1},
+    {name: "Short(s) 2 Custom Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 0},
+
+    {name: "🟢 Short(s) 3️⃣ Delay State",  type: "menu", valueStrings: optArtic, defaultValue: 0},
+    {name: "Short(s) 3 Min Velocity", type: "lin", minValue: 1, maxValue: 127, numberOfSteps: 126, defaultValue: 1},
+    {name: "Short(s) 3 Max Velocity", type: "lin", minValue: 1, maxValue: 127, numberOfSteps: 126, defaultValue: 1},
+    {name: "Short(s) 3 Custom Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 0},
+
+    {name: "🟢 Short(s) 4️⃣ Delay State",  type: "menu", valueStrings: optArtic, defaultValue: 0},
+    {name: "Short(s) 4 Min Velocity", type: "lin", minValue: 1, maxValue: 127, numberOfSteps: 126, defaultValue: 1},
+    {name: "Short(s) 4 Max Velocity", type: "lin", minValue: 1, maxValue: 127, numberOfSteps: 126, defaultValue: 1},
+    {name: "Short(s) 4 Custom Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 0},
+
+    // --- DEBUG ---
+    {name: "🪲 Debug Trace", type: "menu", valueStrings: ["Off", "On"], defaultValue: 0}
+];
+
+var params = new Array(45).fill(0);
+
+var activeNotes   = 0;
+var delayMemory   = {};
+var currentMode   = "none"; 
+var currentDelay  = 0;
+var lastNoteDelay = 0; // Stores delay memory for CC Sync
+
+function logTrace(msg) {
+    if (params[44] === 1) Trace(msg);
+}
+
+function sendWithSafeDelay(event, delayMs) {
+    var delayInt = Math.round(delayMs);
+    if (delayInt <= 0) { event.send(); return; }
+
+    var newEvent;
+    if (event instanceof NoteOn) {
+        newEvent = new NoteOn();
+    } else if (event instanceof NoteOff) {
+        newEvent = new NoteOff();
+    } else {
+        // Pass-through for CCs, Pitchbend, etc., already containing delay
+        event.sendAfterMilliseconds(delayInt);
+        return;
+    }
+    
+    newEvent.pitch = event.pitch;
+    newEvent.velocity = event.velocity;
+    newEvent.channel = event.channel;
+    newEvent.sendAfterMilliseconds(delayInt);
+}
+
+function ParameterChanged(param, value) {
+    params[param] = value;
+}
+
+function isWithin(vel, minIdx, maxIdx) {
+    return (vel >= params[minIdx] && vel <= params[maxIdx]);
+}
+
+function processUACC(vel) {
+    // 1. LEGATOS
+    if (params[4] === 1 && isWithin(vel, 5, 6)) { 
+        currentMode = "legato"; currentDelay = params[7]; logTrace("✅ UACC: Legato 1 | Delay: " + currentDelay); return true; 
+    }
+    if (params[8] === 1 && isWithin(vel, 9, 10)) { 
+        currentMode = "legato"; currentDelay = params[11]; logTrace("✅ UACC: Legato 2 | Delay: " + currentDelay); return true; 
+    }
+
+    // 2. LONGS
+    if (params[12] > 0 && isWithin(vel, 13, 14)) { 
+        currentMode = "long"; currentDelay = (params[12] === 1) ? params[2] : params[15]; logTrace("✅ UACC: Long 1 | Delay: " + currentDelay); return true; 
+    }
+    if (params[16] > 0 && isWithin(vel, 17, 18)) { 
+        currentMode = "long"; currentDelay = (params[16] === 1) ? params[2] : params[19]; logTrace("✅ UACC: Long 2 | Delay: " + currentDelay); return true; 
+    }
+    if (params[20] > 0 && isWithin(vel, 21, 22)) { 
+        currentMode = "long"; currentDelay = (params[20] === 1) ? params[2] : params[23]; logTrace("✅ UACC: Long 3 | Delay: " + currentDelay); return true; 
+    }
+    if (params[24] > 0 && isWithin(vel, 25, 26)) { 
+        currentMode = "long"; currentDelay = (params[24] === 1) ? params[2] : params[27]; logTrace("✅ UACC: Long 4 | Delay: " + currentDelay); return true; 
+    }
+
+    // 3. SHORTS
+    if (params[28] > 0 && isWithin(vel, 29, 30)) { 
+        currentMode = "short"; currentDelay = (params[28] === 1) ? params[3] : params[31]; logTrace("✅ UACC: Short 1 | Delay: " + currentDelay); return true; 
+    }
+    if (params[32] > 0 && isWithin(vel, 33, 34)) { 
+        currentMode = "short"; currentDelay = (params[32] === 1) ? params[3] : params[35]; logTrace("✅ UACC: Short 2 | Delay: " + currentDelay); return true; 
+    }
+    if (params[36] > 0 && isWithin(vel, 37, 38)) { 
+        currentMode = "short"; currentDelay = (params[36] === 1) ? params[3] : params[39]; logTrace("✅ UACC: Short 3 | Delay: " + currentDelay); return true; 
+    }
+    if (params[40] > 0 && isWithin(vel, 41, 42)) { 
+        currentMode = "short"; currentDelay = (params[40] === 1) ? params[3] : params[43]; logTrace("✅ UACC: Short 4 | Delay: " + currentDelay); return true; 
+    }
+
+    return false;
+}
+
+function HandleMIDI(event) {
+    var isNoteOn  = (event instanceof NoteOn && event.velocity > 0);
+    var isNoteOff = (event instanceof NoteOff || (event instanceof NoteOn && event.velocity === 0));
+
+    // The UACC Trigger Note
+    var uaccNote = params[1];
+
+    // 1. UACC KEYSWITCH (Detects trigger note and reads Velocity)
+    if (isNoteOn && event.pitch =
