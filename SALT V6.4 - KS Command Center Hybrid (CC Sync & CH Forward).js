@@ -71,4 +71,93 @@ var PluginParameters = [
     {name: "Long(s) 3 Max KS", type: "menu", valueStrings: midiNotes, defaultValue: 5},
     {name: "Long(s) 3 Custom Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 0},
 
-    {name: "🔵 Long(s) 4️⃣ Delay State",  type: "menu", valueStrings: optArtic, defau
+    {name: "🔵 Long(s) 4️⃣ Delay State",  type: "menu", valueStrings: optArtic, defaultValue: 0},
+    {name: "Long(s) 4 Min Ch", type: "menu", valueStrings: midiChannels, defaultValue: 0},
+    {name: "Long(s) 4 Max Ch", type: "menu", valueStrings: midiChannels, defaultValue: 15},
+    {name: "Long(s) 4 KS State", type: "checkbox", defaultValue: 0},
+    {name: "Long(s) 4 Min KS", type: "menu", valueStrings: midiNotes, defaultValue: 6},
+    {name: "Long(s) 4 Max KS", type: "menu", valueStrings: midiNotes, defaultValue: 6},
+    {name: "Long(s) 4 Custom Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 0},
+
+    // --- SHORT ZONES (45 to 72) ---
+    {name: "🟢 Short(s) 1️⃣ Delay State",  type: "menu", valueStrings: optArtic, defaultValue: 1},
+    {name: "Short(s) 1 Min Ch", type: "menu", valueStrings: midiChannels, defaultValue: 0},
+    {name: "Short(s) 1 Max Ch", type: "menu", valueStrings: midiChannels, defaultValue: 15},
+    {name: "Short(s) 1 KS State", type: "checkbox", defaultValue: 0},
+    {name: "Short(s) 1 Min KS", type: "menu", valueStrings: midiNotes, defaultValue: 7},
+    {name: "Short(s) 1 Max KS", type: "menu", valueStrings: midiNotes, defaultValue: 7},
+    {name: "Short(s) 1 Custom Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 0},
+
+    {name: "🟢 Short(s) 2️⃣ Delay State",  type: "menu", valueStrings: optArtic, defaultValue: 0},
+    {name: "Short(s) 2 Min Ch", type: "menu", valueStrings: midiChannels, defaultValue: 0},
+    {name: "Short(s) 2 Max Ch", type: "menu", valueStrings: midiChannels, defaultValue: 15},
+    {name: "Short(s) 2 KS State", type: "checkbox", defaultValue: 0},
+    {name: "Short(s) 2 Min KS", type: "menu", valueStrings: midiNotes, defaultValue: 8},
+    {name: "Short(s) 2 Max KS", type: "menu", valueStrings: midiNotes, defaultValue: 8},
+    {name: "Short(s) 2 Custom Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 0},
+
+    {name: "🟢 Short(s) 3️⃣ Delay State",  type: "menu", valueStrings: optArtic, defaultValue: 0},
+    {name: "Short(s) 3 Min Ch", type: "menu", valueStrings: midiChannels, defaultValue: 0},
+    {name: "Short(s) 3 Max Ch", type: "menu", valueStrings: midiChannels, defaultValue: 15},
+    {name: "Short(s) 3 KS State", type: "checkbox", defaultValue: 0},
+    {name: "Short(s) 3 Min KS", type: "menu", valueStrings: midiNotes, defaultValue: 9},
+    {name: "Short(s) 3 Max KS", type: "menu", valueStrings: midiNotes, defaultValue: 9},
+    {name: "Short(s) 3 Custom Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 0},
+
+    {name: "🟢 Short(s) 4️⃣ Delay State",  type: "menu", valueStrings: optArtic, defaultValue: 0},
+    {name: "Short(s) 4 Min Ch", type: "menu", valueStrings: midiChannels, defaultValue: 0},
+    {name: "Short(s) 4 Max Ch", type: "menu", valueStrings: midiChannels, defaultValue: 15},
+    {name: "Short(s) 4 KS State", type: "checkbox", defaultValue: 0},
+    {name: "Short(s) 4 Min KS", type: "menu", valueStrings: midiNotes, defaultValue: 10},
+    {name: "Short(s) 4 Max KS", type: "menu", valueStrings: midiNotes, defaultValue: 10},
+    {name: "Short(s) 4 Custom Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 0},
+
+    // --- DEBUG ---
+    {name: "🪲 Debug Trace", type: "menu", valueStrings: ["Off", "On"], defaultValue: 0}
+];
+
+var params = new Array(74).fill(0);
+var activeNotes   = 0;
+var delayMemory   = {};
+var currentMode   = "none"; 
+var currentDelay  = 0;
+
+var lastNoteMode  = "none"; // Stores the mode of the last played note (Hybrid processing)
+var lastNoteDelay = 0;      // Stores the delay of the last played note (CC Sync)
+
+function logTrace(msg) {
+    if (params[73] === 1) Trace(msg);
+}
+
+function sendWithSafeDelay(event, delayMs) {
+    var delayInt = Math.round(delayMs);
+    if (delayInt <= 0) { event.send(); return; }
+
+    var newEvent;
+    if (event instanceof NoteOn) {
+        newEvent = new NoteOn();
+    } else if (event instanceof NoteOff) {
+        newEvent = new NoteOff();
+    } else {
+        event.sendAfterMilliseconds(delayInt);
+        return;
+    }
+    
+    newEvent.pitch = event.pitch;
+    newEvent.velocity = event.velocity;
+    newEvent.channel = event.channel;
+    newEvent.sendAfterMilliseconds(delayInt);
+}
+
+function ParameterChanged(param, value) {
+    params[param] = value;
+}
+
+// 🎯 KEYSWITCH RADAR / DETECTOR
+function isValidKS(pitch, channel) {
+    if (params[3] === 1 && params[6] === 1 && pitch >= params[7] && pitch <= params[8] && channel >= params[4] && channel <= params[5]) return true;
+    if (params[10] === 1 && params[13] === 1 && pitch >= params[14] && pitch <= params[15] && channel >= params[11] && channel <= params[12]) return true;
+
+    if (params[17] > 0 && params[20] === 1 && pitch >= params[21] && pitch <= params[22] && channel >= params[18] && channel <= params[19]) return true;
+    if (params[24] > 0 && params[27] === 1 && pitch >= params[28] && pitch <= params[29] && channel >= params[25] && channel <= params[26]) return true;
+    if (params[31] 
