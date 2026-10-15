@@ -6,7 +6,7 @@
 
 SALT is a suite of MIDI processing scripts built for **Apple Logic Pro's Scripter MIDI FX plugin**.
 
-It was designed to facilitate MIDI programming and automation by handling the latency inherent in instrument articulations in orchestral sample libraries, managing the attack-dependent timing of each one, as well as the automatic synchronization of the corresponding Continuous Controllers (CC) and their multi-channel MIDI routing, all from the Apple Logic Pro Scripter MIDI FX plug-in.
+It was designed to facilitate MIDI programming and automation by handling the latency inherent in instrument articulations in orchestral sample libraries, managing the attack-dependent timing of each articulation, as well as the automatic synchronization of the corresponding Continuous Controllers (CC) and their multi-channel MIDI routing, all within Apple Logic Pro's Scripter MIDI FX plug-in.
 > **Just add a pinch of SALT to your orchestral template.** 🧂
 
 ---
