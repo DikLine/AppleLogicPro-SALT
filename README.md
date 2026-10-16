@@ -21,10 +21,10 @@ Different delay values can be used to compensate for articulations with very dif
 
 - Slow Legato transitions
 - Sustains and Long articulations
-- Fast Shorts
+- Slow/Fast Shorts
 - Spiccato or Staccato attacks
 
-This allows different articulations to remain rhythmically aligned without relying on a single static Track Delay value.
+This allows different articulations to remain rhythmically grid-aligned without relying on a single static Track Delay value.
 
 ### CC Sync — Continuous Controller Synchronization
 
