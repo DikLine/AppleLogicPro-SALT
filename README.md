@@ -81,7 +81,7 @@ This version introduces a **Hybrid Radar**, allowing articulations to be trigger
 
 It also includes the **Multi-Channel Forwarding Engine**.
 
-Any CC data received on **Channel 1** is automatically cloned across **Channels 2–16** while retaining the appropriate articulation delay.
+Any CC data received/recorded on **Channel 1** is automatically cloned across **Channels 2–16** while retaining the appropriate articulation delay.
 
 ---
 
