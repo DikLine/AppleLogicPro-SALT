@@ -121,7 +121,7 @@ You can now configure your specific:
 
 directly from the **Scripter Plugin UI parameters**.
 
-> **Tip:** You can save the script using the **Save As...** option in the Scripter Editor so you do not need to paste the code again every time you use it.
+> **Tip:** You can save the script using the **Save As...** drop-down menu option in the Scripter UI so you do not need to paste the code again every time you use it.
 
 ---
 
