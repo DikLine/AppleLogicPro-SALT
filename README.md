@@ -73,7 +73,7 @@ All SALT delay controls use milliseconds and range from **0 to 400 ms**. The Cin
 
 ## Cinematic Studio Series setup
 
-**SALT 1–3 are designed for the CC-based configuration shown in their reference screenshots.** Reproduce the relevant **Switches**, **Articulations** and **Output** pages in Logic's Articulation Set Editor, and match the instrument's own articulation configuration.
+**SALT 1–3 are designed for the CC-based configuration shown in their reference screenshots.** Use the **Switches**, **Articulations** and **Output** pages as configuration references, and match the instrument's own articulation configuration. The Articulation ID numbers are examples, as explained below.
 
 The screenshots show how remote note switches select articulation entries and how those entries output **Controller 58** messages to the instrument. SALT's **Keyswitch CC** parameter defaults to **58** and must match that output selector.
 
@@ -88,6 +88,17 @@ For the illustrated setup:
 The shown Output pages use **value 3** for the low-latency/sustain-legato selection, and **value 8** for expressive legato where available. Other CC58 values select the script's generic non-legato timing. Follow the full screenshot mappings for the library's remaining articulations and controls.
 
 The Articulation IDs in the **Articulations** page are distinct from the controller values in the **Output** page: the scripts detect the outgoing CC message, not the articulation's name or ID.
+
+### Articulation IDs are custom examples
+
+**The Articulation IDs shown in the Cinematic Studio Series screenshots belong to the author's personal numbering scheme, standardized across his sample libraries using a custom Python parser and mapping table. They are not required by SALT or Cinematic Studio Series.**
+
+You can choose your own IDs in Logic's **1–255** range. Give each articulation a unique ID **within that Articulation Set**; the same number can be reused in another set. The IDs do not need to be consecutive or match the screenshots.
+
+What matters for SALT 1–3 is that each articulation remains linked to the correct **Output** message: the configured controller number (CC58 in these examples) and its appropriate value. Changing an Articulation ID does not mean changing that CC value to the same number. Keep the articulation assignments in your MIDI regions consistent with your chosen IDs.
+
+Apple's documentation describes the [selectable articulation ID range](https://support.apple.com/en-hk/guide/logicpro/lgcp7ab9f068/10.7/mac/11.0) and explains that [IDs can be arbitrary for instruments controlled through Output transformations](https://support.apple.com/ar-qa/guide/logicpro/lgcp33a49091/10.7/mac/11.0). This flexibility concerns the illustrated third-party-library workflow; instruments that directly select sample groups by Articulation ID may require their own matching IDs.
+
 
 ### Starting timing values
 
