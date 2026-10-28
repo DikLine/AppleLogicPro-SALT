@@ -5,11 +5,11 @@ var PluginParameters = [
     {name: "Track Delay [1st Note] (ms)", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 220},
     {name: "Keyswitch CC (e.g. 58)", type: "lin", minValue: 0, maxValue: 127, numberOfSteps: 127, defaultValue: 58},
     {name: "Shorts Delay (ms)", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 160},
-    {name: "Legato Low Latency Medium Delay (ms)", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 130},
-    {name: "Legato Low Latency Fast Delay (ms)", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 150},
-    {name: "Legato Expressive Slow Delay (ms)", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 0},
-    {name: "Legato Expressive Medium Delay (ms)", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 90},
-    {name: "Legato Expressive Fast Delay (ms)", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 130}
+    {name: "Leg Low Latency Med Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 130},
+    {name: "Leg Low Latency Fast Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 150},
+    {name: "Leg Expressive Slow Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 0},
+    {name: "Leg Expressive Med Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 90},
+    {name: "Leg Expressive Fast Delay", type: "lin", minValue: 0, maxValue: 400, numberOfSteps: 400, defaultValue: 130}
 ];
 
 var TRACK_DELAY_MS = 220;
