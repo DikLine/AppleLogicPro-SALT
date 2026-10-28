@@ -95,6 +95,10 @@ The Articulation IDs in the **Articulations** page are distinct from the control
 
 You can choose your own IDs in Logic's **1–255** range. Give each articulation a unique ID **within that Articulation Set**; the same number can be reused in another set. The IDs do not need to be consecutive or match the screenshots.
 
+**Why standardize IDs across libraries?** Articulation IDs are stored with the MIDI notes in a region. A consistent numbering scheme lets you copy a region to another instrument track and retain the intended articulation without repeatedly editing its notes' articulation assignments. For example, violin **spiccato** and oboe **staccatissimo** can share an ID when you deliberately map them to an equivalent musical role in your template.
+
+For this to work, the **same ID must select the intended articulation in both tracks' Articulation Sets**, with each set providing the appropriate output mapping for its instrument. Logic carries the stored ID across; it does not infer equivalence from articulation names or similar playing techniques. Standardization is therefore optional for SALT itself, but useful when reusing MIDI regions across instruments and libraries.
+
 What matters for SALT 1–3 is that each articulation remains linked to the correct **Output** message: the configured controller number (CC58 in these examples) and its appropriate value. Changing an Articulation ID does not mean changing that CC value to the same number. Keep the articulation assignments in your MIDI regions consistent with your chosen IDs.
 
 Apple's documentation describes the [selectable articulation ID range](https://support.apple.com/en-hk/guide/logicpro/lgcp7ab9f068/10.7/mac/11.0) and explains that [IDs can be arbitrary for instruments controlled through Output transformations](https://support.apple.com/ar-qa/guide/logicpro/lgcp33a49091/10.7/mac/11.0). This flexibility concerns the illustrated third-party-library workflow; instruments that directly select sample groups by Articulation ID may require their own matching IDs.
